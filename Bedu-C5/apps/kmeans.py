@@ -33,6 +33,9 @@ def app():
         return k_means
 
     k_means = wrapper_kmeans()
+
+    # Descargar el modelo
+    st.markdown(Helpers.download_model(k_means), unsafe_allow_html=True)
     
     # Encontrar las coordenadas reales más cercanos a los clusters
     centers =  k_means.cluster_centers_
@@ -45,6 +48,10 @@ def app():
     # Clasificaciones
     clasificaciones = k_means.predict(df[['latitud', 'longitud']])
 
+    # Descargas datos 
+    pd_clasificaciones = pd.DataFrame(clasificaciones)
+    st.markdown(Helpers.get_table_download_link_csv(pd_clasificaciones), unsafe_allow_html=True) 
+
     # Gráficar en 2D usando seaborn
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -53,7 +60,7 @@ def app():
     ax.set_ylabel('longitud')
 
 
-    sns.scatterplot(df['latitud'], df['longitud'], ax=ax, hue=clasificaciones, palette='rainbow');
+    sns.scatterplot(df['longitud'], df['latitud'], ax=ax, hue=clasificaciones, palette='rainbow');
 
     sns.scatterplot(rep_points['longitude'], rep_points['latitude'], ax=ax, s=100,  color='black')
     # Desplegar el mapa en pantalla

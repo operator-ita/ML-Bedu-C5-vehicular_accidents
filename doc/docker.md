@@ -20,9 +20,8 @@ sudo docker run -p EXTERNAL_PORT:INTERNAL_PORT   beduc5
 sudo docker run -p 8090:8501  beduc5 
 ```
 
-
+sudo docker run -p 80:8501 -d --restart unless-stopped  beduc5 
 ## 3. Visualice changes 
-
 
 ## 9. Get the IP for db instant  
 docker inspect europan-dashboar

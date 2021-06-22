@@ -33,9 +33,11 @@ def app():
     st.write(f"Cargando modelo entreado: {is_fit}")
 
 
+    model_path = '/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.sav'
+    centroids_model_path = '/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.csv'
+
     @st.cache
-    def stremlit_dbscan(df, km=km, min_samples=min_samples):
-        model_path = '/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.sav'
+    def stremlit_dbscan(df, km=km, min_samples=min_samples):    
         coords = df[['latitud', 'longitud']].values
         kms_per_radian = 6371.0088
         epsilon = km / kms_per_radian
@@ -86,7 +88,10 @@ def app():
 
 
     # Encontrar las coordenadas reales más cercanos a los clusters
-    rep_points = wrapper_cache_center_most_points()
+    if km==0.25 and min_samples==3 and path.exists(centroids_model_path):
+        rep_points = pd.read_csv(centroids_model_path)
+    else:
+        rep_points = wrapper_cache_center_most_points()
 
     # Gráficar en 2D usando seaborn
     fig = plt.figure()
@@ -94,7 +99,7 @@ def app():
     ax.set_title('Locación de cluster', pad=15)
     ax.set_xlabel('latitud')
     ax.set_ylabel('longitud')
-    sns.scatterplot(rep_points['latitude'], rep_points['longitude'], ax=ax)
+    sns.scatterplot(rep_points['longitude'], rep_points['latitude'], ax=ax)
     # Desplegar el mapa en pantalla
     st.pyplot(fig)
 
@@ -106,6 +111,10 @@ def app():
     ### Encontrar la coordenada más cercana al cluster
     """)
     st.map(rep_points[['latitude','longitude']])
+
+    # Mostrar datos
+    if st.checkbox('Mostrar datos'):
+        st.write(rep_points)
 
     # Opción de descarga
     st.markdown(Helpers.get_table_download_link_csv(rep_points), unsafe_allow_html=True) 

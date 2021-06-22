@@ -3,17 +3,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import pickle
+
+import os.path
+from os import path
 
 from sklearn.cluster import DBSCAN
 from geopy.distance import great_circle
 from shapely.geometry import MultiPoint
 
+
 from helpers import Helpers
+
+
 
 def app():
 
     st.markdown("""
-    ## Clusterización k-medias
+    ## Clusterización de coordenadas empleando DBScan
     """)
 
     df = pd.read_csv(
@@ -22,23 +29,41 @@ def app():
     km = st.slider('Radio en kilometros', min_value=0.1, max_value=5.0, value=0.25, step=0.1)
     min_samples = st.slider('Epsilon (num. vecinos)', min_value=1, max_value=10, value=3, step=1)
 
+    is_fit = path.exists("/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.sav") 
+    st.write(f"Cargando modelo entreado: {is_fit}")
+
+
     @st.cache
     def stremlit_dbscan(df, km=km, min_samples=min_samples):
+        model_path = '/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.sav'
         coords = df[['latitud', 'longitud']].values
         kms_per_radian = 6371.0088
         epsilon = km / kms_per_radian
-        db = DBSCAN(eps=epsilon, min_samples=min_samples, algorithm='ball_tree',
-                metric='haversine').fit(np.radians(coords))
+
+        if km==0.25 and min_samples==3:
+            if path.exists(model_path):
+                db = pickle.load(open(model_path, 'rb'))
+            else:
+                db = DBSCAN(eps=epsilon, min_samples=min_samples, algorithm='ball_tree',
+                        metric='haversine').fit(np.radians(coords))
+                pickle.dump(db, open(model_path, 'wb'))
+        else:
+            db = DBSCAN(eps=epsilon, min_samples=min_samples, algorithm='ball_tree',
+                        metric='haversine').fit(np.radians(coords))        
+
         cluster_labels = db.labels_
         num_clusters = len(set(cluster_labels))  # Number of cluster with no noise
         # num_clusters = len(set(labels)) - (1 if -1 in labels else 0) # Number of cluster with noise
         clusters = pd.Series([coords[cluster_labels == n]
                          for n in range(num_clusters)])
-        return cluster_labels, num_clusters, clusters
+        return cluster_labels, num_clusters, clusters, db
 
-    cluster_labels, num_clusters, clusters = stremlit_dbscan(df)
-    
-    st.write('Number of clusters: {}'.format(num_clusters))
+
+    cluster_labels, num_clusters, clusters, db = stremlit_dbscan(df)
+
+    st.markdown(Helpers.download_model(db), unsafe_allow_html=True)
+
+    st.write(f'Reducción de {len(df)} a {num_clusters} coordenadas')
 
     st.markdown("""
     ### Encontrar la coordenada más cercana al cluster

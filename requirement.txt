@@ -6,3 +6,5 @@ streamlit==0.83.0
 seaborn==0.11.1
 shapely==1.7.1
 geopy==2.1.0
+bokeh==2.3.2
+streamlit-bokeh-events==0.1.2

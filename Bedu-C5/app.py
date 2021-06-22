@@ -1,6 +1,6 @@
 import streamlit as st
 from multiapp import MultiApp
-from apps import home, dbscan, data # import your app modules here
+from apps import home, dbscan, data, kmeans # import your app modules here
 from helpers import Helpers
 
 app = MultiApp()
@@ -15,5 +15,6 @@ En ésta página se encuentra el proyecto de análisis de accidentes vehiculares
 app.add_app("Inicio", home.app)
 app.add_app("Datos", data.app)
 app.add_app("Clusterización", dbscan.app)
+app.add_app("Centros de atención", kmeans.app)
 # The main app
 app.run()

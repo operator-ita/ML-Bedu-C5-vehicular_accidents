@@ -24,6 +24,5 @@ sudo docker run -p 8090:8501  beduc5
 ## 3. Visualice changes 
 
 
-
 ## 9. Get the IP for db instant  
 docker inspect europan-dashboar

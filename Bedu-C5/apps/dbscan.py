@@ -13,7 +13,7 @@ from helpers import Helpers
 def app():
 
     st.markdown("""
-    ## Clusterización de coordenadas empleando DBScan
+    ## Clusterización k-medias
     """)
 
     df = pd.read_csv(

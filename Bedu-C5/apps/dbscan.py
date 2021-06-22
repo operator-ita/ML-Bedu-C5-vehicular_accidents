@@ -12,10 +12,7 @@ from sklearn.cluster import DBSCAN
 from geopy.distance import great_circle
 from shapely.geometry import MultiPoint
 
-
 from helpers import Helpers
-
-
 
 def app():
 
@@ -29,12 +26,12 @@ def app():
     km = st.slider('Radio en kilometros', min_value=0.1, max_value=5.0, value=0.25, step=0.1)
     min_samples = st.slider('Epsilon (num. vecinos)', min_value=1, max_value=10, value=3, step=1)
 
-    is_fit = path.exists("/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.sav") 
-    st.write(f"Cargando modelo entreado: {is_fit}")
-
-
+    
     model_path = '/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.sav'
     centroids_model_path = '/Bedu-C5/Bedu-C5/apps/dbscan_r250m_ep4.csv'
+
+    #is_fit = path.exists(model_path) 
+    #st.write(f"Cargando modelo entreado: {is_fit}")
 
     @st.cache
     def stremlit_dbscan(df, km=km, min_samples=min_samples):    

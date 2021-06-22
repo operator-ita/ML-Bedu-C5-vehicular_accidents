@@ -1,10 +1,11 @@
 import streamlit as st
+import pickle
 
 from bokeh.models.widgets import Button
 from bokeh.models import CustomJS
 from streamlit_bokeh_events import streamlit_bokeh_events
 
-
+ 
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -12,6 +13,10 @@ import matplotlib.pyplot as plt
 
 from helpers import Helpers
 from sklearn.cluster import KMeans
+
+
+import os.path
+from os import path
 
 
 def app():
@@ -23,7 +28,10 @@ def app():
     df = pd.read_csv(
         "/Bedu-C5/Bedu-C5/apps/data/incidentes-viales-c5-limpio.csv", sep="$", index_col=0)
 
-    n_clusters = st.slider('No. de estaciones', min_value=1, max_value=50, value=10, step=1)
+    model_path = '/Bedu-C5/Bedu-C5/apps/kmeans_k50.sav'
+    clasification_path = '/Bedu-C5/Bedu-C5/apps/kmeans_k50.csv'
+
+    n_clusters = st.slider('No. de estaciones', min_value=1, max_value=50, value=50, step=1)
     max_iter = st.slider('Max. iteraciones', min_value=1000, max_value=100000, value=10000, step=100)
 
     @st.cache
@@ -32,21 +40,29 @@ def app():
         k_means.fit(df[['latitud', 'longitud']])
         return k_means
 
-    k_means = wrapper_kmeans()
+    if n_clusters==50 and path.exists(model_path):
+        k_means = pickle.load(open(model_path, 'rb'))
+    else:
+        k_means = wrapper_kmeans()
 
-    # Descargar el modelo
-    st.markdown(Helpers.download_model(k_means), unsafe_allow_html=True)
+
+    # Clasificaciones
+    if n_clusters==50 and path.exists(clasification_path):
+        clasificaciones =  pd.read_csv(clasification_path).values.ravel()
+    else:
+        clasificaciones = k_means.predict(df[['latitud', 'longitud']])
     
-    # Encontrar las coordenadas reales más cercanos a los clusters
+
+    # Encontrar las coordenadas reales más cercanas a los clusters
     centers =  k_means.cluster_centers_
     rep_points = pd.DataFrame(
     centers,
     columns=['latitude', 'longitude'])
 
-    st.write(rep_points)
+    
 
-    # Clasificaciones
-    clasificaciones = k_means.predict(df[['latitud', 'longitud']])
+    # Descargar el modelo
+    st.markdown(Helpers.download_model(k_means), unsafe_allow_html=True)
 
     # Descargas datos 
     pd_clasificaciones = pd.DataFrame(clasificaciones)
@@ -59,19 +75,22 @@ def app():
     ax.set_xlabel('latitud')
     ax.set_ylabel('longitud')
 
-
     sns.scatterplot(df['longitud'], df['latitud'], ax=ax, hue=clasificaciones, palette='rainbow');
 
     sns.scatterplot(rep_points['longitude'], rep_points['latitude'], ax=ax, s=100,  color='black')
     # Desplegar el mapa en pantalla
     st.pyplot(fig)
 
-    # Desplegar coordenadas en mapa dinámico
+    
+    # Descargar coordenadas
+    st.write("Coordenadas centros de atención propuestos")
+    st.write(rep_points)
+
     
 
    # Graficando mapas
     st.markdown("""
-    ## Ubincación de todos los centros de atención
+    ## Ubicación de todos los centros de atención
     """)
     st.map(rep_points[['latitude','longitude']])
 
